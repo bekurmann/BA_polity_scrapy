@@ -25,23 +25,38 @@ class PoliticanOWSpider(scrapy.Spider):
         def extract_with_css(query):
             return response.css(query).get(default='').strip()
 
-        def parse_politican_address(first_name, last_name, jurisdiction):
-            address_data = scrapy.http.Response(url=f'https://tel.search.ch/api/?was={first_name}+{last_name}&wo={jurisdiction}')
-            address_data.selector.remove_namespaces()
-            return address_data.xpath("//content/text()").get()
+        # variables for callback
+        first_name = extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 0)
+        last_name = extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 1)
+        jurisdiction = extract_with_css('#wahlkreisPartContent span::text')
 
+         # make new request to tel.search.ch + passing already scraped fields as cb_kwargs
+         # api key: 33455d58f107b0ee44720ebbf044c499
+        yield scrapy.Request(url=f'https://tel.search.ch/api/?was={first_name}+{last_name}&wo={jurisdiction}&key=33455d58f107b0ee44720ebbf044c499', 
+                            callback=self.parse_politican_address,
+                            cb_kwargs={
+                                'first_name': extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 0),
+                                'last_name': extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 1),
+                                'date_of_birth': extract_with_css('#birthdayBehoerdeMitgliedContent::text'),
+                                'profession': extract_with_css('#gegwBerufPartContent::text'),
+                                'email': extract_with_css('#emailPartContent a::text'),
+                                'jurisdiction': extract_with_css('#wahlkreisPartContent span::text'),
+                                'fraction': extract_with_css('#fraktionenPartContent a::text'),      
+                            })
 
-        yield {
-            # yield extracts
-            'first_name': extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 0),
-            'last_name': extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 1),
-            'date_of_birth': extract_with_css('#birthdayBehoerdeMitgliedContent::text'),
-            'profession': extract_with_css('#gegwBerufPartContent::text'),
-            'email': extract_with_css('#emailPartContent a::text'),
-            'jurisdiction': extract_with_css('#wahlkreisPartContent span::text'),
-            'fraction': extract_with_css('#fraktionenPartContent a::text'),
-            
-            'street1': parse_politican_address(extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 0),
-                                                extract_with_css_name('#nameBehoerdeMitgliedTitle b::text', 1),
-                                                extract_with_css('#wahlkreisPartContent span::text')),
+    def parse_politican_address(self, response, first_name, last_name, date_of_birth, profession, email, jurisdiction, fraction):
+        selector = scrapy.selector.Selector(response)
+        selector.remove_namespaces()       
+        
+        yield { 
+            'first_name': first_name,
+            'last_name': last_name,
+            'date_of_birth': date_of_birth,
+            'profession': profession,
+            'email': email,
+            'jurisdiction': jurisdiction,
+            'fraction': fraction,
+            'street1': selector.xpath("//street/text()").get(),
+            'street2': selector.xpath("//streetno/text()").get(),
+            'phone': selector.xpath("//phone/text()").get()
         }
