@@ -69,7 +69,7 @@ class PoliticanOWSpider(scrapy.Spider):
         }
 
 # **********************************************************************************************
-# OW Politican Images (TODO)
+# OW Politican Images
 # **********************************************************************************************
 
 class PoliticanOWimageSpider(scrapy.Spider):
