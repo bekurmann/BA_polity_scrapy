@@ -62,9 +62,15 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'scraper.pipelines.ScraperPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'scraper.pipelines.ScraperPipeline': 300,
+   'scrapy.pipelines.images.ImagesPipeline': 1,
+   'scrapy.pipelines.files.FilesPipeline': 1,
+   'scraper.pipelines.ImageItemOWPipeline': 300,
+}
+
+FILES_STORE = '/home/benjamin/Documents/DEV/polity_scrapy/scraper/files'
+IMAGES_STORE = '/home/benjamin/Documents/DEV/polity_scrapy/scraper/images'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
