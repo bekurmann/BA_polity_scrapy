@@ -27,5 +27,6 @@ class ImageItemOWPipeline(ImagesPipeline):
     
     def file_path(self, request, response=None, info=None, *, item):
         file_name: str = item["first_name"] + item["last_name"] + "_" + request.url.split("/")[-1]
-        path: str = "files/politicans/ow/"
+        # change path depending on canton
+        path: str = "politicans/ow/"
         return path + file_name
