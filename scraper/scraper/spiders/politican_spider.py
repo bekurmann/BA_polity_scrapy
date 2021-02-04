@@ -1,6 +1,6 @@
 import scrapy
 
-from scraper.items import ImageItemOW
+from scraper.items import ImageItemOW, AffairItemOW, SessionItemOW
 
 # run:
 # scrapy crawl politicanOW -O politicanOW.csv
@@ -71,7 +71,6 @@ class PoliticanOWSpider(scrapy.Spider):
 # **********************************************************************************************
 # OW Politican Images
 # **********************************************************************************************
-
 class PoliticanOWimageSpider(scrapy.Spider):
     name = 'politicanOWimage'
 
@@ -107,6 +106,85 @@ class PoliticanOWimageSpider(scrapy.Spider):
             last_name=last_name,
             jurisdiction=jurisdiction,
             image_urls=[absolute_image_urls]
+        )
+        
+# **********************************************************************************************
+# OW affairs
+# **********************************************************************************************
+
+class AffairOWSpider(scrapy.Spider):
+    name = 'affairOW'
+
+    start_urls = [ 'https://www.ow.ch/de/politik/kantonsratmain/politbusiness/welcome.php?nr=&sq=&dat1=01.01.2010&dat2=04.02.2021&art=&saction=Suchen' ]
+
+    def parse(self, response):
+        affair_page_links = response.css('#ol-politbusiness :nth-child(1) a')
+        yield from response.follow_all(affair_page_links, self.parse_affair)
+
+        pagination_links = response.css('.next')
+        yield from response.follow_all(pagination_links, self.parse)
+
+
+    def parse_affair(self, response):
+
+        def extract_with_css(query):
+            return response.css(query).get(default='').strip()     
+
+        # variables for callback
+        title = extract_with_css('#contentboxsub h2::text')
+        identifier = extract_with_css(':nth-child(5) :nth-child(1) .pb_value::text')
+        date = extract_with_css('#contentboxsub :nth-child(3) .pb_value::text')
+        politican = extract_with_css('#contentboxsub :nth-child(7) a::text')
+        affair_type = extract_with_css('#contentboxsub :nth-child(2) .pb_value::text')
+        session = extract_with_css('#contentboxsub :nth-child(11) a::text')
+        absolute_file_urls = extract_with_css('#contentboxsub li a::attr(href)')
+        #absolute_file_urls = response.urljoin(relative_file_urls)
+
+        yield AffairItemOW(
+            title=title,
+            identifier=identifier,
+            date=date,
+            politican=politican,
+            affair_type=affair_type,
+            session=session,
+            file_urls=[absolute_file_urls]
+        )
+
+# **********************************************************************************************
+# OW sessions
+# **********************************************************************************************
+
+class SessionOWSpider(scrapy.Spider):
+    # inclusive file download for protocolsè
+    name = 'sessionOW'
+
+    start_urls = [ 'https://www.ow.ch/de/politik/kantonsratmain/sitzung/?show=all' ]
+
+    def parse(self, response):
+        session_page_links = response.css(':nth-child(1) a')
+        yield from response.follow_all(session_page_links, self.parse_session)
+
+        pagination_links = response.css('.next')
+        yield from response.follow_all(pagination_links, self.parse)
+
+
+    def parse_session(self, response):
+
+        def extract_with_css(query):
+            return response.css(query).get(default='').strip()     
+
+        # variables for callback
+        title = extract_with_css('#event_titel b::text')
+        date = extract_with_css('#event_datum::text')
+        file1 = extract_with_css('#event_dokumente_content a:nth-child(1)::attr(href)')
+        file2 = extract_with_css('#event_dokumente_content a:nth-child(4)::attr(href)')
+        file3 = extract_with_css('#event_dokumente_content a:nth-child(7)::attr(href)')
+        file4 = extract_with_css('#event_dokumente_content a:nth-child(10)::attr(href)')
+
+        yield SessionItemOW(
+            title=title,
+            date=date,
+            file_urls=[file1, file2, file3, file4]
         )
 
 # **********************************************************************************************

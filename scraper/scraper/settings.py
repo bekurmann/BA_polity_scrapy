@@ -66,7 +66,9 @@ ITEM_PIPELINES = {
    'scraper.pipelines.ScraperPipeline': 300,
    'scrapy.pipelines.images.ImagesPipeline': 1,
    'scrapy.pipelines.files.FilesPipeline': 1,
-   'scraper.pipelines.ImageItemOWPipeline': 300,
+   #'scraper.pipelines.ImageItemOWPipeline': 300,
+   #'scraper.pipelines.AffairFileItemOWPipeline': 300,
+   'scraper.pipelines.SessionFileItemOWPipeline': 300,
 }
 
 FILES_STORE = '/home/benjamin/Documents/DEV/polity_scrapy/scraper/files'

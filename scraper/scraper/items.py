@@ -18,3 +18,21 @@ class ImageItemOW(scrapy.Item):
     image_urls = scrapy.Field()
     images = scrapy.Field()
     path = scrapy.Field()
+
+class AffairItemOW(scrapy.Item):
+    title = scrapy.Field()
+    identifier = scrapy.Field()
+    date = scrapy.Field()
+    politican = scrapy.Field()
+    affair_type = scrapy.Field()
+    session = scrapy.Field()
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
+    path = scrapy.Field()
+
+class SessionItemOW(scrapy.Item):
+    title = scrapy.Field()
+    date = scrapy.Field()
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
+    path = scrapy.Field()
