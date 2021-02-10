@@ -128,7 +128,12 @@ class AffairOWSpider(scrapy.Spider):
     def parse_affair(self, response):
 
         def extract_with_css(query):
-            return response.css(query).get(default='').strip()     
+            return response.css(query).get(default='').strip()   
+
+        def extract_with_css_multiple_download_links(query):
+            return response.css(query).getall()
+
+            #return response.css(query).getall()
 
         # variables for callback
         title = extract_with_css('#contentboxsub h2::text')
@@ -137,8 +142,32 @@ class AffairOWSpider(scrapy.Spider):
         politican = extract_with_css('#contentboxsub :nth-child(7) a::text')
         affair_type = extract_with_css('#contentboxsub :nth-child(2) .pb_value::text')
         session = extract_with_css('#contentboxsub :nth-child(11) a::text')
-        absolute_file_urls = extract_with_css('#contentboxsub li a::attr(href)')
-        #absolute_file_urls = response.urljoin(relative_file_urls)
+        absolute_file_urls = extract_with_css_multiple_download_links('#contentboxsub li a::attr(href)')
+
+
+        # ERROR handling newbie style: 
+        # always got error when trying to download empty string, robots.txt is dummy download
+        #
+        try:
+            file1 = absolute_file_urls[0]
+        except:
+            file1 = "https://www.ow.ch/robots.txt"
+            
+        try:
+            file2 = absolute_file_urls[1]
+        except:
+            file2 = "https://www.ow.ch/robots.txt"
+
+        try:
+            file3 = absolute_file_urls[2]
+        except:
+            file3 = "https://www.ow.ch/robots.txt"
+
+        try:
+            file4 = absolute_file_urls[3]
+        except:
+            file4 = "https://www.ow.ch/robots.txt"
+
 
         yield AffairItemOW(
             title=title,
@@ -147,7 +176,11 @@ class AffairOWSpider(scrapy.Spider):
             politican=politican,
             affair_type=affair_type,
             session=session,
-            file_urls=[absolute_file_urls]
+            file1=file1,
+            file2=file2,
+            file3=file3,
+            file4=file4,
+            file_urls=[file1, file2, file3, file4]
         )
 
 # **********************************************************************************************
